@@ -1,0 +1,95 @@
+{% extends "base.html" %}
+
+{% block title %}Detailed Answer Review — BrainQuest{% endblock %}
+
+{% block content %}
+<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+  <div>
+    <h1 style="font-size: 2rem; font-weight: 800;">📖 Detailed Technical Review</h1>
+    <p style="color: var(--text-muted);">
+      Candidate: <strong style="color: var(--text-white);">{{ attempt.student_name }}</strong> • 
+      Score: <strong style="color: var(--success);">{{ attempt.score }} / {{ attempt.total_questions }} ({{ attempt.percentage }}%)</strong>
+    </p>
+  </div>
+  <a href="{{ url_for('view_result', attempt_id=attempt.id) }}" class="btn btn-secondary">
+    ⬅ Back to Scorecard
+  </a>
+</div>
+
+<!-- Question Breakdown Cards -->
+<div style="display: flex; flex-direction: column; gap: 1.25rem;">
+  {% set letters = ['A', 'B', 'C', 'D'] %}
+  {% for item in review_items %}
+    <div class="card" style="border-left: 5px solid {% if item.is_correct %}var(--success){% elif item.user_choice is none %}var(--text-muted){% else %}var(--danger){% endif %};">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem;">
+        <div style="display: flex; gap: 8px; align-items: center;">
+          <span class="pill pill-cyan">QUESTION #{{ loop.index }}</span>
+          <span class="pill pill-muted">{{ item.category }}</span>
+          <span class="pill pill-muted">{{ item.difficulty }}</span>
+        </div>
+
+        {% if item.is_correct %}
+          <span class="pill pill-success">✅ Correct (+1)</span>
+        {% elif item.user_choice is none %}
+          <span class="pill pill-muted">⚪ Unanswered (0)</span>
+        {% else %}
+          <span class="pill pill-danger">❌ Incorrect (0)</span>
+        {% endif %}
+      </div>
+
+      <h3 style="font-size: 1.2rem; font-weight: 700; margin-bottom: 1.25rem; color: var(--text-white);">
+        {{ item.question }}
+      </h3>
+
+      <!-- 4 Options with color coded highlights -->
+      <div style="display: flex; flex-direction: column; gap: 8px; margin-bottom: 1.25rem;">
+        {% for opt in item.options %}
+          {% set opt_idx = loop.index0 %}
+          {% set is_correct_opt = (opt_idx == item.correct_index) %}
+          {% set is_user_opt = (opt_idx == item.user_choice) %}
+
+          <div style="padding: 10px 14px; border-radius: 6px; display: flex; align-items: center; gap: 10px;
+                      background-color: {% if is_correct_opt %}var(--success-bg){% elif is_user_opt %}var(--danger-bg){% else %}var(--bg-card-alt){% endif %};
+                      border: 1px solid {% if is_correct_opt %}var(--success){% elif is_user_opt %}var(--danger){% else %}var(--border){% endif %};">
+            
+            <span style="font-weight: 700; width: 28px; height: 28px; border-radius: 4px; display: inline-flex; align-items: center; justify-content: center;
+                         background: {% if is_correct_opt %}var(--success){% elif is_user_opt %}var(--danger){% else %}var(--bg-main){% endif %};
+                         color: white;">
+              {{ letters[opt_idx] }}
+            </span>
+
+            <span style="flex: 1; font-weight: {% if is_correct_opt or is_user_opt %}700{% else %}normal{% endif %};
+                         color: {% if is_correct_opt %}var(--success){% elif is_user_opt %}var(--danger){% else %}var(--text-white){% endif %};">
+              {{ opt }}
+            </span>
+
+            {% if is_correct_opt and is_user_opt %}
+              <span class="pill pill-success">Your Choice — Correct!</span>
+            {% elif is_correct_opt %}
+              <span class="pill pill-success">Correct Answer</span>
+            {% elif is_user_opt %}
+              <span class="pill pill-danger">Your Choice — Incorrect</span>
+            {% endif %}
+          </div>
+        {% endfor %}
+      </div>
+
+      <!-- Pedagogical Concept Explanation -->
+      <div style="background: var(--bg-main); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 12px 16px;">
+        <div style="font-size: 0.82rem; font-weight: 700; color: var(--accent-cyan); text-transform: uppercase; margin-bottom: 4px;">
+          💡 Concept & Analytical Explanation
+        </div>
+        <p style="font-size: 0.95rem; color: var(--text-white); line-height: 1.5;">
+          {{ item.explanation }}
+        </p>
+      </div>
+    </div>
+  {% endfor %}
+</div>
+
+<div style="text-align: center; margin-top: 2rem;">
+  <a href="{{ url_for('dashboard') }}" class="btn btn-primary btn-lg">
+    🚀 Take Another Quiz
+  </a>
+</div>
+{% endblock %}

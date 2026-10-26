@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block title %}BrainQuest — Technical Quiz Portal{% endblock %}</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🧠</text></svg>">
+  {% block extra_head %}{% endblock %}
+</head>
+<body>
+  <!-- Navigation Header -->
+  <nav class="navbar">
+    <a href="{{ url_for('index') }}" class="brand">
+      <span class="brand-icon">🧠</span>
+      <span>BrainQuest</span>
+      <span class="brand-badge">B.Tech AIML</span>
+    </a>
+
+    <div class="nav-links">
+      <a href="{{ url_for('index') }}" class="nav-link {% if request.endpoint == 'index' %}active{% endif %}">Home</a>
+      <a href="{{ url_for('dashboard') }}" class="nav-link {% if request.endpoint == 'dashboard' %}active{% endif %}">Take Quiz</a>
+      <a href="{{ url_for('history') }}" class="nav-link {% if request.endpoint == 'history' %}active{% endif %}">History & Analytics</a>
+    </div>
+  </nav>
+
+  <!-- Flash Messages -->
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+      <div style="max-width: 1100px; margin: 1rem auto; padding: 0 1.5rem;">
+        {% for category, msg in messages %}
+          <div style="padding: 12px 18px; border-radius: 6px; margin-bottom: 10px; font-weight: 600; 
+                      background-color: {% if category == 'danger' %}var(--danger-bg){% else %}var(--success-bg){% endif %};
+                      color: {% if category == 'danger' %}var(--danger){% else %}var(--success){% endif %};
+                      border: 1px solid currentColor;">
+            {{ msg }}
+          </div>
+        {% endfor %}
+      </div>
+    {% endif %}
+  {% endwith %}
+
+  <!-- Main Content Body -->
+  <main class="main-container">
+    {% block content %}{% endblock %}
+  </main>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <p>🎓 B.Tech 2nd-Year CSE (AIML) College Project • <strong>BrainQuest Technical Evaluation Portal</strong></p>
+    <p style="margin-top: 4px; color: var(--text-dim);">Engineered with Python 3.11 • Flask Web Framework • SQLite Relational Database</p>
+  </footer>
+
+  {% block extra_scripts %}{% endblock %}
+</body>
+</html>

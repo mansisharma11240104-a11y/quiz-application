@@ -1,0 +1,143 @@
+{% extends "base.html" %}
+
+{% block title %}Historical Quiz Records & Analytics — BrainQuest{% endblock %}
+
+{% block content %}
+<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+  <div>
+    <h1 style="font-size: 2rem; font-weight: 800;">📊 Examination History & Analytics</h1>
+    <p style="color: var(--text-muted);">Database records stored persistently in local SQLite instance</p>
+  </div>
+  <a href="{{ url_for('dashboard') }}" class="btn btn-primary">
+    🚀 New Quiz Session
+  </a>
+</div>
+
+<!-- 4 Analytics Overview Cards -->
+<div class="metrics-grid">
+  <div class="metric-card">
+    <div style="font-size: 0.85rem; font-weight: 700; color: var(--text-muted);">TOTAL ATTEMPTS</div>
+    <div class="metric-val" style="color: var(--primary-hover);">{{ stats.total_attempts }}</div>
+  </div>
+
+  <div class="metric-card">
+    <div style="font-size: 0.85rem; font-weight: 700; color: var(--text-muted);">AVERAGE SCORE</div>
+    <div class="metric-val" style="color: var(--warning);">{{ stats.avg_percentage }}%</div>
+  </div>
+
+  <div class="metric-card">
+    <div style="font-size: 0.85rem; font-weight: 700; color: var(--text-muted);">HIGHEST SCORE</div>
+    <div class="metric-val" style="color: var(--success);">{{ stats.max_percentage }}%</div>
+  </div>
+
+  <div class="metric-card">
+    <div style="font-size: 0.85rem; font-weight: 700; color: var(--text-muted);">TOP SUBJECT</div>
+    <div class="metric-val" style="color: var(--accent-cyan); font-size: 1.25rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+      {{ stats.most_popular_category }}
+    </div>
+  </div>
+</div>
+
+<!-- Filter and Search Toolbar -->
+<div class="card" style="padding: 1.25rem; margin-bottom: 1.5rem;">
+  <form method="GET" action="{{ url_for('history') }}" style="display: flex; gap: 12px; flex-wrap: wrap; align-items: flex-end;">
+    <div style="flex: 1; min-width: 200px;">
+      <label class="form-label" style="font-size: 0.85rem;">Filter by Category:</label>
+      <select name="category" class="form-control" onchange="this.form.submit()">
+        <option value="All" {% if selected_cat == 'All' %}selected{% endif %}>All Categories</option>
+        {% for cat in categories %}
+          <option value="{{ cat }}" {% if selected_cat == cat %}selected{% endif %}>{{ cat }}</option>
+        {% endfor %}
+      </select>
+    </div>
+
+    <div style="flex: 1.5; min-width: 240px;">
+      <label class="form-label" style="font-size: 0.85rem;">Candidate Search:</label>
+      <input 
+        type="text" 
+        name="search" 
+        class="form-control" 
+        placeholder="Search by student name..." 
+        value="{{ search_query }}"
+      >
+    </div>
+
+    <div style="display: flex; gap: 8px;">
+      <button type="submit" class="btn btn-secondary">
+        🔍 Filter
+      </button>
+      <a href="{{ url_for('history') }}" class="btn btn-secondary">
+        Reset
+      </a>
+    </div>
+
+    <div style="margin-left: auto;">
+      <button 
+        type="button" 
+        class="btn btn-danger"
+        onclick="if(confirm('Are you sure you want to clear all quiz history records?')) { document.getElementById('clearHistoryForm').submit(); }"
+      >
+        🗑️ Clear History
+      </button>
+    </div>
+  </form>
+
+  <form id="clearHistoryForm" action="{{ url_for('clear_history') }}" method="POST" style="display: none;"></form>
+</div>
+
+<!-- History Table -->
+<div class="card" style="padding: 0; overflow: hidden;">
+  <div class="table-responsive">
+    <table class="custom-table">
+      <thead>
+        <tr>
+          <th>#ID</th>
+          <th>Candidate</th>
+          <th>Subject Category</th>
+          <th>Difficulty</th>
+          <th>Score</th>
+          <th>Percentage</th>
+          <th>Grade</th>
+          <th>Time Taken</th>
+          <th>Timestamp</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% if history %}
+          {% for r in history %}
+            <tr>
+              <td><span class="pill pill-muted">{{ r.id }}</span></td>
+              <td><strong>{{ r.student_name }}</strong></td>
+              <td>{{ r.category }}</td>
+              <td>
+                <span class="pill {% if r.difficulty == 'Easy' %}pill-success{% elif r.difficulty == 'Medium' %}pill-warning{% else %}pill-danger{% endif %}">
+                  {{ r.difficulty }}
+                </span>
+              </td>
+              <td><strong>{{ r.score }} / {{ r.total_questions }}</strong></td>
+              <td>
+                <span style="font-weight: 700; color: {% if r.percentage >= 75 %}var(--success){% elif r.percentage >= 50 %}var(--warning){% else %}var(--danger){% endif %};">
+                  {{ r.percentage }}%
+                </span>
+              </td>
+              <td>{{ r.grade }}</td>
+              <td>
+                {% set mins = r.time_taken_seconds // 60 %}
+                {% set secs = r.time_taken_seconds % 60 %}
+                {{ "%02d"|format(mins) }}m {{ "%02d"|format(secs) }}s
+              </td>
+              <td style="color: var(--text-muted); font-size: 0.85rem;">{{ r.timestamp }}</td>
+            </tr>
+          {% endfor %}
+        {% else %}
+          <tr>
+            <td colspan="9" style="text-align: center; padding: 2rem; color: var(--text-muted);">
+              No quiz attempts found matching your filter criteria.
+            </td>
+          </tr>
+        {% endif %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

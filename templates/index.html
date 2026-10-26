@@ -1,0 +1,108 @@
+{% extends "base.html" %}
+
+{% block title %}Welcome to BrainQuest — Python Technical Quiz Portal{% endblock %}
+
+{% block content %}
+<div style="text-align: center; max-width: 800px; margin: 1rem auto 2.5rem auto;">
+  <span class="pill pill-primary" style="margin-bottom: 0.75rem;">🎓 B.Tech 2nd-Year CSE (AIML) College Project</span>
+  <h1 style="font-size: 2.75rem; font-weight: 800; line-height: 1.2; margin-bottom: 0.75rem; background: linear-gradient(135deg, #fff 0%, #94a3b8 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">
+    Master Your Technical Concepts
+  </h1>
+  <p style="font-size: 1.15rem; color: var(--text-muted);">
+    Interactive, timed assessment portal covering Python, C++, Data Structures, Artificial Intelligence & Machine Learning, and General Knowledge.
+  </p>
+</div>
+
+<!-- Candidate Login Card -->
+<div class="card" style="max-width: 650px; margin: 0 auto 2.5rem auto;">
+  <div class="card-header">
+    <h2 class="card-title">👤 Candidate Information</h2>
+    <span class="pill pill-cyan">Assessment Setup</span>
+  </div>
+
+  <form action="{{ url_for('start_session') }}" method="POST">
+    <div class="form-group">
+      <label for="student_name" class="form-label">Candidate / Student Full Name or Roll Number:</label>
+      <input 
+        type="text" 
+        id="student_name" 
+        name="student_name" 
+        class="form-control" 
+        placeholder="e.g. Mansi Sharma (Roll: 22CSE045)" 
+        value="{{ session.get('student_name', '') }}" 
+        required
+        autofocus
+      >
+      <small style="color: var(--text-muted); display: block; margin-top: 5px;">
+        Your name will be associated with the attempt history in the database.
+      </small>
+    </div>
+
+    <div style="display: flex; gap: 12px; margin-top: 1.5rem;">
+      <button type="submit" class="btn btn-primary btn-lg" style="flex: 2;">
+        🚀 Start Quiz Now
+      </button>
+      <a href="{{ url_for('history') }}" class="btn btn-secondary btn-lg" style="flex: 1;">
+        📊 View History
+      </a>
+    </div>
+  </form>
+</div>
+
+<!-- Featured Subjects Preview Grid -->
+<div style="margin-top: 2rem;">
+  <h3 style="font-size: 1.25rem; font-weight: 700; margin-bottom: 1rem; color: var(--text-white); text-align: center;">
+    Curated Examination Domains
+  </h3>
+
+  <div class="category-grid">
+    <div class="cat-option-card">
+      <div class="cat-icon">🐍</div>
+      <div>
+        <div class="cat-title">Python Programming</div>
+        <div class="cat-desc">Decorators, Generators, GIL, Metaclasses, Comprehensions, Immutability</div>
+      </div>
+    </div>
+
+    <div class="cat-option-card">
+      <div class="cat-icon">⚙️</div>
+      <div>
+        <div class="cat-title">C++ Programming</div>
+        <div class="cat-desc">Pointers, Virtual Functions, RAII, Smart Pointers, Templates & SFINAE</div>
+      </div>
+    </div>
+
+    <div class="cat-option-card">
+      <div class="cat-icon">🌲</div>
+      <div>
+        <div class="cat-title">Data Structures</div>
+        <div class="cat-desc">BST, AVL Trees, Red-Black Trees, DSU, Heaps, Graph Algorithms, Asymptotics</div>
+      </div>
+    </div>
+
+    <div class="cat-option-card">
+      <div class="cat-icon">🤖</div>
+      <div>
+        <div class="cat-title">AI & Machine Learning</div>
+        <div class="cat-desc">Neural Networks, Transformers, A* Search, Loss Functions, GANs, L1/L2 Norms</div>
+      </div>
+    </div>
+
+    <div class="cat-option-card">
+      <div class="cat-icon">🌍</div>
+      <div>
+        <div class="cat-title">General Knowledge</div>
+        <div class="cat-desc">Scientific Discoveries, Computing History, Inventions, Geography & World Events</div>
+      </div>
+    </div>
+
+    <div class="cat-option-card">
+      <div class="cat-icon">🎲</div>
+      <div>
+        <div class="cat-title">Comprehensive Mixed</div>
+        <div class="cat-desc">Cross-disciplinary technical challenges spanning all available subjects</div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

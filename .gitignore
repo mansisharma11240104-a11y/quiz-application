@@ -1,0 +1,19 @@
+# Python Bytecode
+__pycache__/
+*.py[cod]
+*$py.class
+
+# SQLite Database (optional - keep or ignore? In a college project template, keeping clean db or ignoring is common, let's keep test DB out)
+test_quiz.db
+*.sqlite3-journal
+
+# Environments
+.env
+.venv
+env/
+venv/
+ENV/
+
+# VS Code / IDE
+.vscode/
+.idea/

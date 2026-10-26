@@ -1,0 +1,275 @@
+{% extends "base.html" %}
+
+{% block title %}Active Quiz Session — BrainQuest{% endblock %}
+
+{% block content %}
+<form id="quizForm" action="{{ url_for('submit_quiz') }}" method="POST">
+  <!-- Hidden data inputs -->
+  <input type="hidden" name="time_taken_seconds" id="timeTakenSeconds" value="0">
+
+  <!-- Top Bar: Category, Diff, Question Index, and Live Timer -->
+  <div class="quiz-top-bar">
+    <div style="display: flex; gap: 8px; align-items: center;">
+      <span class="pill pill-primary">{{ category }}</span>
+      <span class="pill pill-warning">{{ difficulty }}</span>
+    </div>
+
+    <div style="font-size: 1.15rem; font-weight: 700; color: var(--text-white);" id="questionProgressText">
+      Question 1 of {{ questions|length }}
+    </div>
+
+    <div class="timer-box" id="timerBox">
+      <span>⏱️</span>
+      <span id="timerDisplay">00:00</span>
+    </div>
+  </div>
+
+  <!-- Progress Bar -->
+  <div class="quiz-progress-bar">
+    <div class="quiz-progress-fill" id="progressFill" style="width: 10%;"></div>
+  </div>
+
+  <!-- Questions Container (Client-Side Interactive Slider) -->
+  {% for q in questions %}
+    {% set q_idx = loop.index0 %}
+    <div class="question-pane" id="questionPane{{ q_idx }}" style="display: {% if loop.first %}block{% else %}none{% endif %};">
+      <div class="question-box">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+          <span class="pill pill-cyan">QUESTION #{{ loop.index }}</span>
+          <span class="pill pill-muted">{{ q.difficulty }}</span>
+        </div>
+
+        <h2 class="question-text">{{ q.question }}</h2>
+
+        <div class="options-list">
+          {% set letters = ['A', 'B', 'C', 'D'] %}
+          {% for opt in q.options %}
+            {% set opt_idx = loop.index0 %}
+            <label class="option-card" id="card_{{ q_idx }}_{{ opt_idx }}">
+              <input 
+                type="radio" 
+                name="ans_{{ q.id }}" 
+                value="{{ opt_idx }}" 
+                style="display: none;"
+                onchange="selectOption({{ q_idx }}, {{ opt_idx }})"
+              >
+              <div class="option-letter" id="letter_{{ q_idx }}_{{ opt_idx }}">{{ letters[opt_idx] }}</div>
+              <div class="option-label">{{ opt }}</div>
+            </label>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+  {% endfor %}
+
+  <!-- Question Palette Strip -->
+  <div class="palette-strip">
+    <span style="font-size: 0.85rem; font-weight: 700; color: var(--text-muted); margin-right: 6px;">Palette:</span>
+    {% for q in questions %}
+      <button 
+        type="button" 
+        class="palette-btn {% if loop.first %}active{% endif %}" 
+        id="paletteBtn{{ loop.index0 }}" 
+        onclick="jumpToQuestion({{ loop.index0 }})"
+      >
+        {{ loop.index }}
+      </button>
+    {% endfor %}
+  </div>
+
+  <!-- Bottom Navigation Bar -->
+  <div style="display: flex; justify-content: space-between; align-items: center; background: var(--bg-card); padding: 1.25rem; border-radius: var(--radius-md); border: 1px solid var(--border);">
+    <div style="display: flex; gap: 10px;">
+      <button type="button" class="btn btn-secondary" id="prevBtn" onclick="prevQuestion()" disabled>
+        ⏮ Previous
+      </button>
+      <button type="button" class="btn btn-secondary" onclick="clearCurrentSelection()">
+        🧹 Clear Choice
+      </button>
+    </div>
+
+    <div style="display: flex; gap: 10px;">
+      <button type="button" class="btn btn-primary" id="nextBtn" onclick="nextQuestion()">
+        Next Question ⏭
+      </button>
+      <button type="button" class="btn btn-success" id="submitBtn" onclick="confirmSubmit()">
+        ✅ Submit Quiz
+      </button>
+    </div>
+  </div>
+</form>
+
+<!-- Unanswered Prompt Modal -->
+<div id="unansweredModal" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.75); z-index: 100; align-items: center; justify-content: center;">
+  <div class="card" style="max-width: 480px; width: 90%; text-align: center;">
+    <div style="font-size: 3rem; margin-bottom: 0.5rem;">⚠️</div>
+    <h3 style="font-size: 1.4rem; font-weight: 700; margin-bottom: 0.5rem;">Unanswered Questions!</h3>
+    <p id="modalMessage" style="color: var(--text-muted); margin-bottom: 1.5rem;"></p>
+    <div style="display: flex; gap: 12px; justify-content: center;">
+      <button type="button" class="btn btn-secondary" onclick="closeModal()">
+        Continue Answering
+      </button>
+      <button type="button" class="btn btn-danger" onclick="executeSubmit()">
+        Submit Anyway
+      </button>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+  const totalQuestions = {{ questions|length }};
+  let currentIdx = 0;
+  let userAnswers = new Array(totalQuestions).fill(null);
+  let timeRemaining = {{ time_allowed_seconds }};
+  let timeSpent = 0;
+  let timerInterval = null;
+
+  // Initialize Timer
+  function initTimer() {
+    updateTimerDisplay();
+    timerInterval = setInterval(() => {
+      timeRemaining--;
+      timeSpent++;
+      document.getElementById('timeTakenSeconds').value = timeSpent;
+      updateTimerDisplay();
+
+      if (timeRemaining <= 0) {
+        clearInterval(timerInterval);
+        alert("⏰ Time is up! Your answers are being submitted automatically.");
+        executeSubmit();
+      }
+    }, 1000);
+  }
+
+  function updateTimerDisplay() {
+    const mins = Math.floor(timeRemaining / 60);
+    const secs = timeRemaining % 60;
+    const disp = `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+    const timerElem = document.getElementById('timerDisplay');
+    const timerBox = document.getElementById('timerBox');
+    timerElem.innerText = disp;
+
+    if (timeRemaining <= 10) {
+      timerBox.className = 'timer-box timer-critical';
+    } else if (timeRemaining <= 30) {
+      timerBox.className = 'timer-box timer-warning';
+    } else {
+      timerBox.className = 'timer-box';
+    }
+  }
+
+  // Question Navigation
+  function renderCurrent() {
+    // Show current pane, hide others
+    for (let i = 0; i < totalQuestions; i++) {
+      const pane = document.getElementById(`questionPane${i}`);
+      const btn = document.getElementById(`paletteBtn${i}`);
+      if (pane) pane.style.display = (i === currentIdx) ? 'block' : 'none';
+
+      if (btn) {
+        btn.classList.remove('active');
+        if (i === currentIdx) {
+          btn.classList.add('active');
+        } else if (userAnswers[i] !== null) {
+          btn.classList.add('answered');
+        } else {
+          btn.classList.remove('answered');
+        }
+      }
+    }
+
+    // Update Counter & Progress Bar
+    document.getElementById('questionProgressText').innerText = `Question ${currentIdx + 1} of ${totalQuestions}`;
+    const pct = ((currentIdx + 1) / totalQuestions) * 100;
+    document.getElementById('progressFill').style.width = `${pct}%`;
+
+    // Button states
+    document.getElementById('prevBtn').disabled = (currentIdx === 0);
+    if (currentIdx === totalQuestions - 1) {
+      document.getElementById('nextBtn').style.display = 'none';
+    } else {
+      document.getElementById('nextBtn').style.display = 'inline-flex';
+    }
+  }
+
+  function nextQuestion() {
+    if (currentIdx < totalQuestions - 1) {
+      currentIdx++;
+      renderCurrent();
+    }
+  }
+
+  function prevQuestion() {
+    if (currentIdx > 0) {
+      currentIdx--;
+      renderCurrent();
+    }
+  }
+
+  function jumpToQuestion(idx) {
+    if (idx >= 0 && idx < totalQuestions) {
+      currentIdx = idx;
+      renderCurrent();
+    }
+  }
+
+  // Answer Selection
+  function selectOption(qIdx, optIdx) {
+    userAnswers[qIdx] = optIdx;
+
+    // Update card styling
+    for (let i = 0; i < 4; i++) {
+      const card = document.getElementById(`card_${qIdx}_${i}`);
+      if (card) {
+        if (i === optIdx) {
+          card.classList.add('selected');
+        } else {
+          card.classList.remove('selected');
+        }
+      }
+    }
+    renderCurrent();
+  }
+
+  function clearCurrentSelection() {
+    userAnswers[currentIdx] = null;
+    const pane = document.getElementById(`questionPane${currentIdx}`);
+    if (pane) {
+      const radios = pane.querySelectorAll('input[type="radio"]');
+      radios.forEach(r => r.checked = false);
+      const cards = pane.querySelectorAll('.option-card');
+      cards.forEach(c => c.classList.remove('selected'));
+    }
+    renderCurrent();
+  }
+
+  // Submit Logic
+  function confirmSubmit() {
+    const unanswered = userAnswers.filter(a => a === null).length;
+    if (unanswered > 0) {
+      document.getElementById('modalMessage').innerText = `You have ${unanswered} unanswered question(s) out of ${totalQuestions}. Are you sure you want to finish the quiz?`;
+      const modal = document.getElementById('unansweredModal');
+      modal.style.display = 'flex';
+    } else {
+      executeSubmit();
+    }
+  }
+
+  function closeModal() {
+    document.getElementById('unansweredModal').style.display = 'none';
+  }
+
+  function executeSubmit() {
+    clearInterval(timerInterval);
+    document.getElementById('quizForm').submit();
+  }
+
+  // Start on window load
+  window.onload = function() {
+    initTimer();
+    renderCurrent();
+  };
+</script>
+{% endblock %}

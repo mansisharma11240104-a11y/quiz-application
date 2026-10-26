@@ -1,0 +1,161 @@
+{% extends "base.html" %}
+
+{% block title %}Quiz Configuration & Setup — BrainQuest{% endblock %}
+
+{% block content %}
+<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+  <div>
+    <h1 style="font-size: 2rem; font-weight: 800;">Quiz Configuration & Setup</h1>
+    <p style="color: var(--text-muted);">Candidate: <strong style="color: var(--accent-cyan);">{{ student_name }}</strong></p>
+  </div>
+  <a href="{{ url_for('index') }}" class="btn btn-secondary">
+    ⬅ Change Candidate
+  </a>
+</div>
+
+<form action="{{ url_for('init_quiz') }}" method="POST">
+  <div style="display: grid; grid-template-columns: 1.2fr 0.8fr; gap: 1.5rem;">
+    <!-- Left Column: Category Selection -->
+    <div>
+      <div class="card">
+        <div class="card-header">
+          <h2 class="card-title">1. Select Subject Category</h2>
+          <span class="pill pill-primary">Required</span>
+        </div>
+
+        <div style="display: flex; flex-direction: column; gap: 10px;">
+          <label class="cat-option-card selected">
+            <input type="radio" name="category" value="Python Programming" checked style="margin-top: 5px;">
+            <div>
+              <div class="cat-title">🐍 Python Programming</div>
+              <div class="cat-desc">Python Syntax, OOP, GIL, Metaclasses, Generators, and Comprehensions.</div>
+            </div>
+          </label>
+
+          <label class="cat-option-card">
+            <input type="radio" name="category" value="C++ Programming" style="margin-top: 5px;">
+            <div>
+              <div class="cat-title">⚙️ C++ Programming</div>
+              <div class="cat-desc">Object-Oriented C++, Pointers, RAII, Smart Pointers, and Virtual Dispatch.</div>
+            </div>
+          </label>
+
+          <label class="cat-option-card">
+            <input type="radio" name="category" value="Data Structures" style="margin-top: 5px;">
+            <div>
+              <div class="cat-title">🌲 Data Structures & Algorithms</div>
+              <div class="cat-desc">Trees, Stacks, Queues, Graphs, Heaps, Hash Tables, and Big-O Complexity.</div>
+            </div>
+          </label>
+
+          <label class="cat-option-card">
+            <input type="radio" name="category" value="Artificial Intelligence and Machine Learning" style="margin-top: 5px;">
+            <div>
+              <div class="cat-title">🤖 AI & Machine Learning</div>
+              <div class="cat-desc">Supervised/Unsupervised, Deep Neural Nets, Transformers, A* Search, and GANs.</div>
+            </div>
+          </label>
+
+          <label class="cat-option-card">
+            <input type="radio" name="category" value="General Knowledge" style="margin-top: 5px;">
+            <div>
+              <div class="cat-title">🌍 General Knowledge & Science</div>
+              <div class="cat-desc">Physics, Geography, Inventions, Computing Pioneers, and World History.</div>
+            </div>
+          </label>
+
+          <label class="cat-option-card">
+            <input type="radio" name="category" value="All" style="margin-top: 5px;">
+            <div>
+              <div class="cat-title">🎲 All Categories (Mixed Challenge)</div>
+              <div class="cat-desc">Questions sampled dynamically across all technical and general topics.</div>
+            </div>
+          </label>
+        </div>
+      </div>
+    </div>
+
+    <!-- Right Column: Difficulty, Question Count & Rules -->
+    <div>
+      <!-- Difficulty Card -->
+      <div class="card">
+        <div class="card-header">
+          <h2 class="card-title">2. Select Difficulty</h2>
+          <span class="pill pill-warning">Pacing</span>
+        </div>
+
+        <div class="radio-chip-group">
+          <label class="radio-chip">
+            <input type="radio" name="difficulty" value="Easy">
+            <span>🟢 Easy (45s / Q)</span>
+          </label>
+          <label class="radio-chip">
+            <input type="radio" name="difficulty" value="Medium" checked>
+            <span>🟡 Medium (30s / Q)</span>
+          </label>
+          <label class="radio-chip">
+            <input type="radio" name="difficulty" value="Hard">
+            <span>🔴 Hard (25s / Q)</span>
+          </label>
+          <label class="radio-chip">
+            <input type="radio" name="difficulty" value="All">
+            <span>⚡ All Levels</span>
+          </label>
+        </div>
+      </div>
+
+      <!-- Question Count Card -->
+      <div class="card">
+        <div class="card-header">
+          <h2 class="card-title">3. Question Count</h2>
+          <span class="pill pill-cyan">Length</span>
+        </div>
+
+        <div class="radio-chip-group">
+          <label class="radio-chip">
+            <input type="radio" name="limit" value="5">
+            <span>⚡ 5 Questions (Quick Test)</span>
+          </label>
+          <label class="radio-chip">
+            <input type="radio" name="limit" value="10" checked>
+            <span>🎯 10 Questions (Standard)</span>
+          </label>
+          <label class="radio-chip">
+            <input type="radio" name="limit" value="15">
+            <span>🏆 15 Questions (Comprehensive)</span>
+          </label>
+        </div>
+      </div>
+
+      <!-- Examination Rules Card -->
+      <div class="card" style="border-left: 4px solid var(--warning);">
+        <h3 style="font-size: 1.05rem; font-weight: 700; color: var(--warning); margin-bottom: 0.5rem;">
+          📋 Examination Guidelines
+        </h3>
+        <ul style="font-size: 0.88rem; color: var(--text-white); padding-left: 1.25rem; line-height: 1.6;">
+          <li><strong>+1 Mark</strong> awarded for each correct answer.</li>
+          <li><strong>No negative marking</strong> for incorrect or unanswered questions.</li>
+          <li>Countdown timer starts immediately when you launch.</li>
+          <li><strong>Auto-submit</strong> occurs automatically when the timer reaches 00:00.</li>
+          <li>Detailed technical explanations are available after completion.</li>
+        </ul>
+      </div>
+
+      <!-- Submit Launch Button -->
+      <button type="submit" class="btn btn-success btn-lg" style="width: 100%; padding: 1rem;">
+        🚀 Launch Quiz Now
+      </button>
+    </div>
+  </div>
+</form>
+
+<script>
+  // Add highlight styling when clicking category cards
+  document.querySelectorAll('.cat-option-card').forEach(card => {
+    card.addEventListener('click', () => {
+      document.querySelectorAll('.cat-option-card').forEach(c => c.classList.remove('selected'));
+      card.classList.add('selected');
+    });
+  });
+</script>
+{% endblock %}

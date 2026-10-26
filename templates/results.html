@@ -1,0 +1,70 @@
+{% extends "base.html" %}
+
+{% block title %}Quiz Results & Scorecard — BrainQuest{% endblock %}
+
+{% block content %}
+<div class="score-hero">
+  <span class="pill pill-success" style="font-size: 0.85rem; padding: 6px 16px;">🎉 Quiz Completed Successfully!</span>
+  
+  <div class="score-big" style="color: {% if attempt.percentage >= 75 %}var(--success){% elif attempt.percentage >= 50 %}var(--warning){% else %}var(--danger){% endif %};">
+    {{ attempt.percentage }}%
+  </div>
+
+  <h2 style="font-size: 1.5rem; font-weight: 700; color: var(--text-white); margin-bottom: 0.25rem;">
+    Score: {{ attempt.score }} / {{ attempt.total_questions }} Questions Correct
+  </h2>
+  
+  <p style="color: var(--accent-cyan); font-weight: 600; font-size: 1.1rem;">
+    Academic Standing: {{ attempt.grade }}
+  </p>
+  
+  <p style="color: var(--text-muted); font-size: 0.95rem; margin-top: 0.5rem;">
+    Candidate: <strong style="color: var(--text-white);">{{ attempt.student_name }}</strong> • 
+    Subject: <strong style="color: var(--text-white);">{{ attempt.category }}</strong> • 
+    Difficulty: <strong style="color: var(--text-white);">{{ attempt.difficulty }}</strong>
+  </p>
+</div>
+
+<!-- 4 Metrics Grid -->
+<div class="metrics-grid">
+  <div class="metric-card">
+    <div style="font-size: 0.85rem; font-weight: 700; color: var(--text-muted);">CORRECT ANSWERS</div>
+    <div class="metric-val" style="color: var(--success);">{{ correct_count }} ✅</div>
+  </div>
+
+  <div class="metric-card">
+    <div style="font-size: 0.85rem; font-weight: 700; color: var(--text-muted);">INCORRECT ANSWERS</div>
+    <div class="metric-val" style="color: var(--danger);">{{ incorrect_count }} ❌</div>
+  </div>
+
+  <div class="metric-card">
+    <div style="font-size: 0.85rem; font-weight: 700; color: var(--text-muted);">UNANSWERED / SKIPPED</div>
+    <div class="metric-val" style="color: var(--text-muted);">{{ unanswered_count }} ⚪</div>
+  </div>
+
+  <div class="metric-card">
+    <div style="font-size: 0.85rem; font-weight: 700; color: var(--text-muted);">TIME SPENT</div>
+    <div class="metric-val" style="color: var(--accent-cyan);">
+      {% set mins = attempt.time_taken_seconds // 60 %}
+      {% set secs = attempt.time_taken_seconds % 60 %}
+      {{ "%02d"|format(mins) }}m {{ "%02d"|format(secs) }}s
+    </div>
+  </div>
+</div>
+
+<!-- Action Controls -->
+<div style="display: flex; gap: 12px; justify-content: center; flex-wrap: wrap;">
+  <a href="{{ url_for('review_answers', attempt_id=attempt.id) }}" class="btn btn-primary btn-lg">
+    🔍 Detailed Answer Review & Explanations
+  </a>
+  <a href="{{ url_for('dashboard') }}" class="btn btn-secondary btn-lg">
+    🔄 Take Another Quiz
+  </a>
+  <a href="{{ url_for('history') }}" class="btn btn-secondary btn-lg">
+    📊 View Attempt History
+  </a>
+  <a href="{{ url_for('index') }}" class="btn btn-secondary btn-lg">
+    🏠 Home
+  </a>
+</div>
+{% endblock %}
