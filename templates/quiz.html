@@ -4,8 +4,12 @@
 
 {% block content %}
 <form id="quizForm" action="{{ url_for('submit_quiz') }}" method="POST">
-  <!-- Hidden data inputs -->
+  <!-- Hidden data inputs to ensure 100% reliable submission across serverless environments -->
   <input type="hidden" name="time_taken_seconds" id="timeTakenSeconds" value="0">
+  <input type="hidden" name="question_ids" value="{{ questions | map(attribute='id') | join(',') }}">
+  <input type="hidden" name="category" value="{{ category }}">
+  <input type="hidden" name="difficulty" value="{{ difficulty }}">
+  <input type="hidden" name="student_name" value="{{ student_name }}">
 
   <!-- Top Bar: Category, Diff, Question Index, and Live Timer -->
   <div class="quiz-top-bar">

@@ -883,3 +883,22 @@ def get_questions_by_filter(category=None, difficulty=None, limit=None):
     if limit is not None and limit > 0:
         return filtered[:limit]
     return filtered
+
+
+def get_questions_by_ids(id_list):
+    """
+    Return a list of question dictionaries corresponding to the given IDs,
+    preserving the order specified in id_list.
+    """
+    if not id_list:
+        return []
+    lookup = {q["id"]: q for q in QUESTIONS_DATA}
+    results = []
+    for raw_id in id_list:
+        try:
+            qid = int(raw_id)
+            if qid in lookup:
+                results.append(lookup[qid])
+        except (ValueError, TypeError):
+            continue
+    return results
